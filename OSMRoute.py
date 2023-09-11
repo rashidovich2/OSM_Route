@@ -49,8 +49,7 @@ class Route:
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
         }
-        response = requests.get(url=url, headers=headers)
-        return response
+        return requests.get(url=url, headers=headers)
 
     def _get_map(self, west, south, east, north, zoom: int):
         """ Создаёт фрагмент карты с координатами
@@ -67,10 +66,10 @@ class Route:
         # print(tiles)
         tile_size = (256, 256)
 
-        min_x = min([t.x for t in tiles])
-        min_y = min([t.y for t in tiles])
-        max_x = max([t.x for t in tiles])
-        max_y = max([t.y for t in tiles])
+        min_x = min(t.x for t in tiles)
+        min_y = min(t.y for t in tiles)
+        max_x = max(t.x for t in tiles)
+        max_y = max(t.y for t in tiles)
 
         # Создаём пустую поверхности для изображения в которое будем вставлять тайлы
         map_image = ImageSurface(
@@ -103,15 +102,12 @@ class Route:
         #     map_image.write_to_png(f)
         return {
             'image': map_image,
-            # определим реально занимаемую тайлами область,
-            # для этого будем конвертить тайл в gps координаты,
-            # а потом уже искать минимум и максимум
             'bounds': {
-                "west": min([mercantile.bounds(t).west for t in tiles]),
-                "east": max([mercantile.bounds(t).east for t in tiles]),
-                "south": min([mercantile.bounds(t).south for t in tiles]),
-                "north": max([mercantile.bounds(t).north for t in tiles]),
-            }
+                "west": min(mercantile.bounds(t).west for t in tiles),
+                "east": max(mercantile.bounds(t).east for t in tiles),
+                "south": min(mercantile.bounds(t).south for t in tiles),
+                "north": max(mercantile.bounds(t).north for t in tiles),
+            },
         }
 
     def _get_routing(self, w_1, s_1, w_2, s_2) -> dict:
@@ -161,10 +157,10 @@ class Route:
         # Загружаем координаты и информацию о пути
         dc_rout = self._get_routing(w_1, s_1, w_2, s_2)
         # Определение координат для загрузки тайлов
-        min_w = min([t[0] for t in dc_rout['coordinates']])
-        min_s = min([t[1] for t in dc_rout['coordinates']])
-        max_w = max([t[0] for t in dc_rout['coordinates']])
-        max_s = max([t[1] for t in dc_rout['coordinates']])
+        min_w = min(t[0] for t in dc_rout['coordinates'])
+        min_s = min(t[1] for t in dc_rout['coordinates'])
+        max_w = max(t[0] for t in dc_rout['coordinates'])
+        max_s = max(t[1] for t in dc_rout['coordinates'])
         west = round(min_w, 6)
         south = round(min_s, 6)
         east = round(max_w, 6)
@@ -221,7 +217,7 @@ class Route:
         # Схранение результатов во временный файл
         self.fd, self.path = tempfile.mkstemp(suffix='.img', dir='./')
         with open(self.path, 'wb') as f: \
-                out['image'].write_to_png(f)
+                    out['image'].write_to_png(f)
         return dc_rout
 
     def __enter__(self):
